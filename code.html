@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie App</title>
+    <style>
+        /* Google Fonts Import */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        /* Basic Styles */
+        :root {
+            --primary-color: #FFC107; /* Yellow Accent Color */
+            --background-color: #f0f8ff; /* Light Sky Blue (AliceBlue) */
+            --text-color: #333;
+            --card-bg-color: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        /* Header and Navigation Bar */
+        header {
+            background-color: var(--primary-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+
+        .app-title {
+            color: var(--text-color);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        /* Search Bar */
+        .search-form {
+            display: flex;
+        }
+
+        .search-input {
+            padding: 0.7rem 1rem;
+            border: none;
+            border-radius: 25px 0 0 25px;
+            font-size: 1rem;
+            width: 300px;
+            outline: none;
+        }
+
+        .search-button {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            background-color: var(--text-color);
+            color: var(--primary-color);
+            font-weight: 600;
+            border-radius: 0 25px 25px 0;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .search-button:hover {
+            background-color: #555;
+        }
+        
+        /* Main Content Area */
+        main {
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        /* Movie Container Grid */
+        #movie-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        /* Message for Loading or Not Found */
+        .message {
+            grid-column: 1 / -1; /* Span all columns */
+            text-align: center;
+            font-size: 1.2rem;
+            color: #777;
+        }
+
+        /* Movie Card Design */
+        .movie-card {
+            background-color: var(--card-bg-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+        }
+
+        .movie-info {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .movie-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .movie-meta {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .movie-rating {
+            font-weight: bold;
+            color: #e8a800;
+        }
+
+        .movie-details p {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Watch Button */
+        .watch-button {
+            display: block;
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: auto; /* Pushes button to the bottom */
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .watch-button:hover {
+            background-color: #eab506;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .search-form {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            main {
+                padding: 1rem;
+            }
+            #movie-container {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="app-title">MovieFlix</div>
+        <form class="search-form" id="search-form">
+            <input type="text" id="search-input" class="search-input" placeholder="Search for Movies, Anime...">
+            <button type="submit" class="search-button">Search</button>
+        </form>
+    </header>
+
+    <main>
+        <h2 class="section-title" id="section-title">Kids & Anime Recommendations</h2>
+        <div id="movie-container">
+            <!-- Movie cards yahan JavaScript se add honge -->
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIGURATION ---
+        const API_KEY = 'b12c06c8';
+        const API_URL = `https://www.omdbapi.com/?apikey=${API_KEY}`;
+        const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x450.png?text=Image+Not+Found';
+
+        // --- DOM ELEMENTS ---
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
+        const movieContainer = document.getElementById('movie-container');
+        const sectionTitle = document.getElementById('section-title');
+
+        // --- EVENT LISTENERS ---
+
+        // Page load hone par recommendations dikhaye
+        document.addEventListener('DOMContentLoaded', loadRecommendations);
+
+        // Search form submit hone par search karein
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Form ka default submission roke
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                searchMovies(searchTerm);
+                searchInput.value = ''; // Input field clear karein
+            }
+        });
+
+        // --- CORE FUNCTIONS ---
+
+        /**
+         * Homepage ke liye recommended movies/shows load karta hai
+         */
+        async function loadRecommendations() {
+            sectionTitle.textContent = 'Kids & Anime Recommendations';
+            const recommendations = [
+                'Pokemon', 'Doraemon', 'Shinchan', 'Dragon Ball Z', 'Naruto',
+                'My Neighbor Totoro', 'Spirited Away', 'Tom and Jerry', 'PAW Patrol'
+            ];
+            
+            // Container ko clear karein aur loading message dikhaye
+            movieContainer.innerHTML = '<div class="message">Loading recommendations...</div>';
+
+            // Har recommendation ke liye details fetch karein
+            const moviePromises = recommendations.map(title => fetchMovieDetailsByTitle(title));
+            const movies = await Promise.all(moviePromises);
+
+            // Filter out any null results (if a movie wasn't found)
+            displayMovies(movies.filter(movie => movie));
+        }
+
+        /**
+         * User ke search term ke आधार par movies search karta hai
+         */
+        async function searchMovies(query) {
+            sectionTitle.textContent = `Search Results for "${query}"`;
+            movieContainer.innerHTML = '<div class="message">Searching...</div>';
+            
+            try {
+                // Pehle search API se movie list fetch karein
+                const response = await fetch(`${API_URL}&s=${query}`);
+                const data = await response.json();
+
+                if (data.Response === "True") {
+                    // Har movie ki detail alag se fetch karein
+                    const moviePromises = data.Search.map(movie => fetchMovieDetailsById(movie.imdbID));
+                    const detailedMovies = await Promise.all(moviePromises);
+                    displayMovies(detailedMovies);
+                } else {
+                    displayMessage(data.Error);
+                }
+            } catch (error) {
+                displayMessage('Something went wrong. Please try again.');
+                console.error("Search Error:", error);
+            }
+        }
+        
+        /**
+         * Movie title ka use karke uski details fetch karta hai (for recommendations)
+         */
+        async function fetchMovieDetailsByTitle(title) {
+            try {
+                const response = await fetch(`${API_URL}&t=${title}`);
+                const data = await response.json();
+                return data.Response === "True" ? data : null;
+            } catch (error) {
+                console.error(`Error fetching ${title}:`, error);
+                return null;
+            }
+        }
+
+        /**
+         * IMDB ID ka use karke movie ki details fetch karta hai
+         */
+        async function fetchMovieDetailsById(id) {
+            try {
+                const response = await fetch(`${API_URL}&i=${id}`);
+                const data = await response.json();
+                return data.Response === "True" ? data : null;
+            } catch (error) {
+                console.error(`Error fetching ID ${id}:`, error);
+                return null;
+            }
+        }
+
+
+        /**
+         * Fetched movies ko screen par display karta hai
+         */
+        function displayMovies(movies) {
+            movieContainer.innerHTML = ''; // Container ko clear karein
+
+            if (!movies || movies.length === 0) {
+                displayMessage('No movies found.');
+                return;
+            }
+
+            movies.forEach(movie => {
+                if (!movie) return; // Skip if movie data is null
+
+                const movieCard = document.createElement('div');
+                movieCard.classList.add('movie-card');
+
+                // Poster N/A hone par placeholder use karein
+                const poster = movie.Poster === 'N/A' ? PLACEHOLDER_IMAGE : movie.Poster;
+
+                // Watch link generate karein
+                const watchQuery = encodeURIComponent(`${movie.Title} ${movie.Year} full movie`);
+                const youtubeLink = `https://www.youtube.com/results?search_query=${watchQuery}`;
+                
+                movieCard.innerHTML = `
+                    <img src="${poster}" alt="${movie.Title} Poster" class="movie-poster">
+                    <div class="movie-info">
+                        <h3 class="movie-title">${movie.Title}</h3>
+                        <div class="movie-meta">
+                            <span>${movie.Year}</span>
+                            <span class="movie-rating">⭐ ${movie.imdbRating || 'N/A'}</span>
+                        </div>
+                        <div class="movie-details">
+                            <p><strong>Language:</strong> ${movie.Language || 'N/A'}</p>
+                            <p><strong>Type:</strong> ${movie.Type ? movie.Type.charAt(0).toUpperCase() + movie.Type.slice(1) : 'N/A'}</p>
+                        </div>
+                        <a href="${youtubeLink}" target="_blank" class="watch-button">Watch on YouTube</a>
+                    </div>
+                `;
+                
+                movieContainer.appendChild(movieCard);
+            });
+        }
+
+        /**
+         * Error ya doosre messages display karta hai
+         */
+        function displayMessage(message) {
+            movieContainer.innerHTML = `<div class="message">${message}</div>`;
+        }
+
+    </script>
+</body>
+</html>
